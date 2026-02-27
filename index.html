@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" /> <!-- В якому кодуванні символів написана веб-сторінка -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" /> <!-- Адаптивність під мобільні пристрої -->
+    <title>ЛР1 – Мій застосунок</title> <!-- Назва сторінки -->
+    <link rel="stylesheet" href="styles.css" /> <!-- Підключаємо css -->
+    <script src="app.js" defer></script> <!-- Підключаємо js -->
+  </head>
+  
+  <body> <!-- Початков видимої частини сторінки -->
+    <header> <!-- Шапка -->
+      <h1>Мій застосунок (варіант №1)</h1> <!-- Головний заголовок сторінки -->
+    </header>
+    
+    <main> <!-- Основний конткент сторінки -->
+
+      <!-- Пошук і фільтр -->
+      <section id="search-filter"> <!-- Розділ: Фільтр пошуку -->
+        <input type="text" id="searchInput" placeholder="Пошук (UserName або Comment)" />  <!-- Елемент вводу Input, Текстове поле, Унікальний ідентифікатор + Підказка -->
+        <select id="statusFilter"> <!-- Випадаючий список -->
+          <option value="">Всі статуси</option> <!-- 1 Пункт списку -->
+          <option value="Pending">Pending</option> <!-- 2 Пункт списку -->
+          <option value="Approved">Approved</option> <!-- 3 Пункт списку -->
+          <option value="Rejected">Rejected</option> <!-- 4 Пункт списку -->
+        </select>
+      </section>
+
+      <!-- Форма додавання/редагування записів -->
+      <section id="mysection"> <!-- Розділ: Запис -->
+        <h2>Додати запис</h2> <!-- Підрозділ -->
+        <form id="myform"> <!-- Форма додавання запису -->
+          <div class="field"> <!-- Групує елементи -->
+            <label for="userNameInput">UserName</label> <!-- Підпис поля форми -->
+            <input id="userNameInput" type="text" required /> <!-- Поле для введення тексту -->
+            <p class="error-text" id="userNameError"></p> <!-- Порожній абзац, який показує користувачу повідомлення про помилку -->
+          </div>
+
+          <div class="field">
+            <label for="dateInput">Date</label>
+            <input id="dateInput" type="datetime-local" required />
+            <p class="error-text" id="dateError"></p>
+          </div>
+
+          <div class="field">
+            <label for="accessTypeSelect">AccessType</label>
+            <select id="accessTypeSelect" required>
+              <option value="">Оберіть тип доступу</option>
+              <option value="Read">Read</option>
+              <option value="Write">Write</option>
+              <option value="Admin">Admin</option>
+            </select>
+            <p class="error-text" id="accessTypeError"></p>
+          </div>
+
+          <div class="field">
+            <label for="commentsText">Comments</label>
+            <textarea id="commentsText" rows="4"></textarea> <!-- Багаторядкове поле введення тексту -->
+            <p class="error-text" id="commentsError"></p>
+          </div>
+
+          <div class="field">
+            <label for="statusSelect">Status</label>
+            <select id="statusSelect">
+              <option value="Pending" selected>Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+          </div>
+
+          <div class="buttons">
+            <button type="submit">Додати</button> <!-- Кнопка додати (Відправляє форму) -->
+            <button type="button" id="resetBtn">Очистити</button> <!-- Кнопка очистити (Не форму) -->
+          </div>
+        </form>
+      </section>
+
+      <!-- Таблиця записів -->
+      <section id="list-section">
+        <h2>Список записів</h2>
+        <table> <!-- Таблиця записів -->
+          <thead> <!-- Розділ таблиці із заголовками -->
+            <tr>  <!-- Рядки -->
+              <th>UserName</th> <!-- Заголовок стовпця -->
+              <th>Date</th> <!-- Заголовок стовпця -->
+              <th>AccessType</th> <!-- Заголовок стовпця -->
+              <th>Comments</th> <!-- Заголовок стовпця -->
+              <th>Status</th> <!-- Заголовок стовпця -->
+              <th>Дії</th> <!-- для кнопок редагування/видалення -->
+            </tr>
+          </thead>
+          <tbody id="tableBody"> <!-- Тіло таблиці (Для додавання JS) -->
+            <!-- Сюди JS буде додавати рядки -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>
