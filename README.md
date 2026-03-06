@@ -9,10 +9,10 @@ Project Structure
 
 oap_antoniuk_1.0
 
-index.html      # Main page of the website
-style.css       # Website styles
-app.js          # JavaScript logic
-README.md       # Project documentation
+	1.index.html      # Main page of the website
+	2.style.css       # Website styles
+	3.app.js          # JavaScript logic
+	4.README.md       # Project documentation
 
 How to Run the Project
 
