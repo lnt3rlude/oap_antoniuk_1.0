@@ -8,6 +8,7 @@ The project contains a simple website interface built using modern web technolog
 Project Structure
 
 oap_antoniuk_1.0
+
 index.html      # Main page of the website
 style.css       # Website styles
 app.js          # JavaScript logic
