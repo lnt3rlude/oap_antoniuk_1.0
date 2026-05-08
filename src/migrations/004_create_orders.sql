@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  status TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+
+  FOREIGN KEY (userId)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);
