@@ -1,0 +1,18 @@
+# Системні файли macOS (обов'язково для маководів)
+.DS_Store
+
+# Папки з залежностями (вони важать дуже багато)
+node_modules/
+odsy.frontend/node_modules/
+odsy.ackend/node_modules/
+
+# Збірки проекту (те, що генерує Vite при білді)
+dist/
+build/
+
+# Файли з секретними ключами (бази даних, паролі)
+.env
+.env.local
+
+# Логи помилок npm
+npm-debug.log*

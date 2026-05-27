@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ЛР1 – Мій застосунок</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script src="/src/main.ts" type="module" defer></script>
+  </head>
+  
+  <body>
+    <header>
+      <h1>ODSYSODLOUT</h1>
+      <nav class="tabs-nav">
+        <button data-target="categories-page">Категорії</button>
+        <button data-target="orders-page">Замовлення</button>
+        <button data-target="items-page">Елементи замовлення</button>
+        <button data-target="products-page">Оголошення</button>
+        <button data-target="users-page">Користувачі</button>
+      </nav>
+    </header>
+    
+    <main>
+
+      <div id="categories-page" class="entity-page">
+        <section class="form-section">
+          <h2>Додати категорію</h2>
+          <form id="categoryForm">
+            <div class="field">
+              <label for="catNameInput">Назва категорії</label>
+              <input id="catNameInput" name="name" type="text" required /> 
+              <p class="error-text" id="catNameError"></p>
+            </div>
+            <div class="buttons">
+              <button type="submit">Додати</button>
+              <button type="button" id="catResetBtn">Очистити</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-section">
+          <h2>Список категорій</h2>
+          <section class="search-filter">
+            <input type="text" id="catSearchInput" placeholder="Пошук за категорією..." />
+            <button type="button" id="catRefreshBtn">Оновити дані</button>
+          </section>
+
+          <div id="catLoader" class="ui-state hidden"><div class="spinner"></div> <p>Завантаження даних...</p></div>
+          <div id="catErrorBlock" class="ui-state hidden"><p class="error-text">Помилка: <span id="catErrorDetails"></span></p><button type="button" id="catRetryBtn">Спробувати знову</button></div>
+          <div id="catEmptyBlock" class="ui-state hidden"><p>Список порожній.</p></div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Назва категорії</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="categoryTableBody"></tbody>
+          </table>
+        </section>
+      </div>
+
+      <div id="orders-page" class="entity-page">
+        <section class="form-section"> 
+          <h2>Додати Замовлення</h2> 
+          <form id="orderForm">
+            <div class="field">
+              <label>ID Користувача:</label>
+              <input type="text" name="userId" required placeholder="Вставте UUID користувача"/>
+            </div>
+
+            <div class="field">
+              <label>Сума:</label>
+              <input type="number" name="totalPrice" required min="0" value="0"/>
+            </div>
+
+            <div class="field">
+              <label>Статус:</label>
+              <select name="status">
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="shipped">Shipped</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div class="buttons">
+              <button type="submit">Додати</button>
+              <button type="button" id="orderResetBtn">Очистити</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-section">
+          <h2>Список замовлень</h2>
+          <section class="search-filter">
+            <input type="text" id="orderSearchInput" placeholder="Пошук за UserId..." />
+            <select id="orderStatusFilter">
+              <option value="">Всі статуси</option>
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+              <option value="shipped">Shipped</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <button type="button" id="orderRefreshBtn">🔄 Оновити дані</button>
+          </section>
+
+          <div id="ordLoader" class="ui-state hidden"><div class="spinner"></div><p>Завантаження...</p></div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>ID замовлення</th> 
+                <th>User ID</th>
+                <th>Сума</th>
+                <th>Статус</th>
+                <th>Дата створення</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="orderTableBody"></tbody>
+          </table>
+        </section>
+      </div>
+
+      <div id="items-page" class="entity-page">
+        <section class="form-section">
+          <h2>Додати елемент</h2>
+          <form id="orderItemForm">
+            <div class="field">
+              <label>ID Замовлення:</label>
+              <input type="text" name="orderId" required placeholder="UUID замовлення" />
+            </div>
+            <div class="field">
+              <label>ID Продукту:</label>
+              <input type="text" name="productId" required placeholder="UUID продукту" />
+            </div>
+            <div class="field">
+              <label>Кількість:</label>
+              <input type="number" name="quantity" min="1" value="1" required />
+            </div>
+            <div class="buttons">
+              <button type="submit">Додати в замовлення</button>
+              <button type="button" id="itemResetBtn">Очистити</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-section">
+          <h2>Елементи замовлень</h2>
+          <section class="search-filter">
+            <input type="text" id="itemSearchInput" placeholder="Пошук за ID замовлення або продукту..." />
+            <button type="button" id="itemRefreshBtn">Оновити дані</button>
+          </section>
+          <table>
+            <thead>
+              <tr>
+                <th>ID елемента</th>
+                <th>ID замовлення</th>
+                <th>ID продукту</th>
+                <th>Кількість</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="orderItemTableBody"></tbody>
+          </table>
+        </section>
+      </div>
+
+      <div id="products-page" class="entity-page">
+        <section class="form-section"> 
+          <h2>Додати Оголошення</h2> 
+          <form id="productForm">
+            <div class="field">
+              <label for="prodTitleInput">Заголовок</label>
+              <input id="prodTitleInput" name="title" type="text" required /> 
+              <p class="error-text" id="prodTitleError"></p>
+            </div>
+
+            <div class="field">
+              <label for="prodDescriptionInput">Опис продукту</label>
+              <input id="prodDescriptionInput" name="description" type="text" required /> 
+              <p class="error-text" id="prodDescriptionError"></p>
+            </div>
+
+            <div class="field">
+              <label for="prodPriceInput">Ціна</label>
+              <input id="prodPriceInput" name="price" type="number" min="0" step="0.01" required /> 
+              <p class="error-text" id="prodPriceError"></p>
+            </div>
+
+            <div class="field">
+              <label for="prodStockInput">Наявність</label>
+              <input id="prodStockInput" name="stock" type="number" min="0" step="1" required /> 
+              <p class="error-text" id="prodStockError"></p>
+            </div>
+
+            <div class="field">
+              <label for="prodCategoryIdInput">ID Категорії (Вставте UUID з таблиці категорій)</label> 
+              <input id="prodCategoryIdInput" name="categoryId" type="text" required /> 
+              <p class="error-text" id="prodCategoryError"></p>
+            </div>
+
+            <div class="buttons">
+              <button type="submit">Зберегти оголошення</button> 
+              <button type="button" id="productResetBtn">Очистити</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-section">
+          <h2>Вміст Оголошень</h2>
+          <section class="search-filter">
+            <input type="text" id="productSearchInput" placeholder="Пошук оголошень..." />
+            <button type="button" id="productRefreshBtn">Оновити дані</button>
+          </section>
+
+          <div class="products-table-container">
+            <div class="products-table-header">
+              <div>Назва</div>
+              <div>Опис</div>
+              <div>Ціна</div>
+              <div>Наявність</div>
+              <div>Продано</div>
+              <div style="text-align: right;">Дії</div>
+            </div>
+            
+            <div id="productTableBody" class="products-table-body"></div>
+          </div>
+        </section>
+      </div>
+
+      <div id="users-page" class="entity-page">
+        <section class="form-section"> 
+          <h2>Додати користувача</h2> 
+          <form id="userForm">
+            <div class="field">
+              <label>Ім'я користувача:</label>
+              <input type="text" name="userName" required placeholder="Мінімум 3 символи"/>
+            </div>
+
+            <div class="field">
+              <label>Електронна пошта:</label>
+              <input type="email" name="email" required placeholder="example@mail.com"/>
+            </div>
+
+            <div class="buttons">
+              <button type="submit">Створити користувача</button>
+              <button type="button" id="userResetBtn">Скасувати</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-section">
+          <h2>Список користувачів</h2> 
+          <section class="search-filter">
+            <input type="text" id="userSearchInput" placeholder="Пошук за поштою або ID..." />
+            <button type="button" id="userRefreshBtn">Оновити дані</button>
+          </section>
+
+          <table>
+            <thead>
+              <tr>
+                <th>ID Користувача</th>
+                <th>Ім'я</th>
+                <th>Пошта</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </section>
+      </div>
+
+    </main>
+  </body>
+</html>
