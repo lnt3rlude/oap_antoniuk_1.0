@@ -20,12 +20,12 @@ app.get("/health", (req, res) => {
   res.status(200).json({ ok: true, timestamp: new Date() });
 });
 
-// ROUTES (Тепер з префіксом /v1)
-app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/products", productRoutes);
-app.use("/api/v1/orders", orderRoutes);
-app.use("/api/v1/categories", categoryRoutes);
-app.use("/api/v1/order-items", orderItemRoutes);
+// ROUTES
+app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/order-items", orderItemRoutes);
 
 // ERROR HANDLER (має бути останнім)
 app.use(globalErrorHandler);
