@@ -1,107 +1,156 @@
-const API_BASE_URL = 'http://localhost:3000/api/v1'; // Додано префікс /v1 відповідно до критеріїв контракту
 
-export const apiClient = {
-    /**
-     * Уніфікований метод відправки HTTP-запитів
-     * @param endpoint Відносний шлях ендпоінту (наприклад, '/products')
-     * @param options Налаштування запиту (method, body, headers, signal тощо)
-     */
-    async sendRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
-        const url = `${API_BASE_URL}${endpoint}`;
-        
-        // Збираємо заголовки без ризику перезаписати Content-Type
-        const headers = new Headers({
-            'Content-Type': 'application/json',
-            ...(options.headers || {})
-        });
+export class ApiClient {
+  private baseUrl: string;
 
-        // Формуємо фінальну конфігурацію запиту, гарантуючи наявність signal на найвищому рівні
-        const finalOptions: RequestInit = {
-            ...options,
-            headers: headers
-        };
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
-        try {
-            const response = await fetch(url, finalOptions);
-            
-            // ОБРОБКА СТАНІВ ПОМИЛОК (4xx / 5xx) — Узгоджений формат ProblemDetails
-            if (!response.ok) {
-                let errorDetails: any = null;
-                let errorMessage = 'Сталася помилка на сервері';
+  // Приватний базовий метод для виконання запитів з JWT-токеном
+  private async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const headers = new Headers(options.headers || {});
 
-                try {
-                    // Намагаємось розпарсити відповідь як JSON (RFC 7807 Problem Details або custom)
-                    const errorData = await response.json();
-                    errorMessage = errorData.message || errorData.title || errorMessage;
-                    // Зберігаємо розширені помилки валідації по полях
-                    errorDetails = errorData.errors || errorData.detail || null;
-                } catch {
-                    // Якщо сервер повернув помилку не в форматі JSON (наприклад, збій проксі-сервера)
-                }
+    if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+      headers.set('Content-Type', 'application/json');
+    }
 
-                throw {
-                    status: response.status,
-                    message: errorMessage,
-                    details: errorDetails
-                };
-            }
+    // Автоматично беремо токен з LocalStorage та додаємо в заголовок
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
 
-            // РЯТІВНИЙ БЛОК ДЛЯ DELETE-ЗАПИТІВ ТА СТАТУСУ 204 No Content
-            if (response.status === 204) {
-                return true; 
-            }
+    const config: RequestInit = {
+      ...options,
+      headers,
+    };
 
-            // Безпечний парсинг тіла відповіді
-            const text = await response.text();
-            return text ? JSON.parse(text) : {};
-            
-        } catch (error: any) {
-            // Якщо запит скасовано авто-таймаутом (10с) або кнопкою з main.ts
-            if (error.name === 'AbortError') {
-                console.warn(`Запит до ${endpoint} перервано через таймаут клієнта.`);
-            } else {
-                console.error('API Error:', error);
-            }
-            throw error;
-        }
-    },
+    const response = await fetch(url, config);
 
-    // ============================================================================
-    // МЕТОДИ СУТНОСТЕЙ (Тепер усі методи приймають options для прокидання signal)
-    // ============================================================================
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { message: 'Unknown error occurred' };
+      }
+      
+      const error = new Error(errorData.message || `HTTP error! status: ${response.status}`) as any;
+      error.status = response.status;
+      error.code = errorData.code;
+      error.details = errorData.details;
+      throw error;
+    }
 
-    // --- CATEGORIES ---
-    async getCategories(options?: RequestInit) { return this.sendRequest('/categories', { method: 'GET', ...options }); },
-    async getCategoriesById(id: string, options?: RequestInit) { return this.sendRequest(`/categories/${id}`, { method: 'GET', ...options }); },
-    async createCategories(data: any, options?: RequestInit) { return this.sendRequest('/categories', { method: 'POST', body: JSON.stringify(data), ...options }); },
-    async updateCategories(id: string, data: any, options?: RequestInit) { return this.sendRequest(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify(data), ...options }); },
-    async deleteCategories(id: string, options?: RequestInit) { return this.sendRequest(`/categories/${id}`, { method: 'DELETE', ...options }); },
+    if (response.status === 204) {
+      return {} as T;
+    }
 
-    // --- PRODUCTS ---
-    async getProducts(options?: RequestInit) { return this.sendRequest('/products', { method: 'GET', ...options }); },
-    async getProductsById(id: string, options?: RequestInit) { return this.sendRequest(`/products/${id}`, { method: 'GET', ...options }); },
-    async createProducts(data: any, options?: RequestInit) { return this.sendRequest('/products', { method: 'POST', body: JSON.stringify(data), ...options }); },
-    async updateProducts(id: string, data: any, options?: RequestInit) { return this.sendRequest(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(data), ...options }); },
-    async deleteProducts(id: string, options?: RequestInit) { return this.sendRequest(`/products/${id}`, { method: 'DELETE', ...options }); },
+    return response.json();
+  }
 
-    // --- ORDERS ---
-    async getOrders(options?: RequestInit) { return this.sendRequest('/orders', { method: 'GET', ...options }); },
-    async getOrdersById(id: string, options?: RequestInit) { return this.sendRequest(`/orders/${id}`, { method: 'GET', ...options }); },
-    async createOrders(data: any, options?: RequestInit) { return this.sendRequest('/orders', { method: 'POST', body: JSON.stringify(data), ...options }); },
-    async updateOrders(id: string, data: any, options?: RequestInit) { return this.sendRequest(`/orders/${id}`, { method: 'PATCH', body: JSON.stringify(data), ...options }); },
-    async deleteOrders(id: string, options?: RequestInit) { return this.sendRequest(`/orders/${id}`, { method: 'DELETE', ...options }); },
+  // ========================================================================
+  // УНІВЕРСАЛЬНИЙ МЕТОД ДЛЯ SUBMIT-ФОРМ (Потрібен для нашого main.ts)
+  // ========================================================================
+  public async sendRequest<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    return this.fetch<T>(endpoint, options);
+  }
 
-    // --- ORDER ITEMS ---
-    async getOrderItems(options?: RequestInit) { return this.sendRequest('/order-items', { method: 'GET', ...options }); },
-    async getOrderItemsById(id: string, options?: RequestInit) { return this.sendRequest(`/order-items/${id}`, { method: 'GET', ...options }); },
-    async createOrderItems(data: any, options?: RequestInit) { return this.sendRequest('/order-items', { method: 'POST', body: JSON.stringify(data), ...options }); },
-    async updateOrderItems(id: string, data: any, options?: RequestInit) { return this.sendRequest(`/order-items/${id}`, { method: 'PATCH', body: JSON.stringify(data), ...options }); },
-    async deleteOrderItems(id: string, options?: RequestInit) { return this.sendRequest(`/order-items/${id}`, { method: 'DELETE', ...options }); },
+  // ========================================================================
+  // МЕТОДИ АВТЕНТИФІКАЦІЇ
+  // ========================================================================
+  public async login(data: any): Promise<{ message: string; token: string; user: any }> {
+    return this.fetch<{ message: string; token: string; user: any }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 
-    // --- USERS ---
-    async getUsers(options?: RequestInit) { return this.sendRequest('/users', { method: 'GET', ...options }); },
-    async getUsersById(id: string, options?: RequestInit) { return this.sendRequest(`/users/${id}`, { method: 'GET', ...options }); },
-    async createUsers(data: any, options?: RequestInit) { return this.sendRequest('/users', { method: 'POST', body: JSON.stringify(data), ...options }); },
-    async updateUsers(id: string, data: any, options?: RequestInit) { return this.sendRequest(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(data), ...options }); },
-    async deleteUsers(id: string, options?: RequestInit) { return this.sendRequest(`/users/${id}`, { method: 'DELETE', ...options }); }
-};
+  public async register(data: any): Promise<{ message: string; user: any }> {
+    return this.fetch<{ message: string; user: any }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ============================================================================
+  // МЕТОДИ СУТНОСТЕЙ (CRUD)
+  // ============================================================================
+
+  // Categories
+  public async getCategories(options?: { signal?: AbortSignal }): Promise<any[]> {
+    return this.fetch<any[]>('/categories', options);
+  }
+  public async createCategories(data: any): Promise<any> {
+    return this.fetch<any>('/categories', { method: 'POST', body: JSON.stringify(data) });
+  }
+  public async updateCategories(id: string, data: any): Promise<any> {
+    return this.fetch<any>(`/categories/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+  public async deleteCategories(id: string): Promise<void> {
+    return this.fetch<void>(`/categories/${id}`, { method: 'DELETE' });
+  }
+
+  // Orders
+  public async getOrders(options?: { signal?: AbortSignal }): Promise<any[]> {
+    return this.fetch<any[]>('/orders', options);
+  }
+  public async createOrders(data: any): Promise<any> {
+    return this.fetch<any>('/orders', { method: 'POST', body: JSON.stringify(data) });
+  }
+  public async updateOrders(id: string, data: any): Promise<any> {
+    return this.fetch<any>(`/orders/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+  public async deleteOrders(id: string): Promise<void> {
+    return this.fetch<void>(`/orders/${id}`, { method: 'DELETE' });
+  }
+
+  // OrderItems
+  public async getOrderItems(options?: { signal?: AbortSignal }): Promise<any[]> {
+    return this.fetch<any[]>('/order-items', options);
+  }
+  public async createOrderItems(data: any): Promise<any> {
+    return this.fetch<any>('/order-items', { method: 'POST', body: JSON.stringify(data) });
+  }
+  public async updateOrderItems(id: string, data: any): Promise<any> {
+    return this.fetch<any>(`/order-items/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+  public async deleteOrderItems(id: string): Promise<void> {
+    return this.fetch<void>(`/order-items/${id}`, { method: 'DELETE' });
+  }
+
+  // Products
+  public async getProducts(options?: { signal?: AbortSignal }): Promise<any[]> {
+    return this.fetch<any[]>('/products', options);
+  }
+  public async createProducts(data: any): Promise<any> {
+    return this.fetch<any>('/products', { method: 'POST', body: JSON.stringify(data) });
+  }
+  public async updateProducts(id: string, data: any): Promise<any> {
+    return this.fetch<any>(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+  public async deleteProducts(id: string): Promise<void> {
+    return this.fetch<void>(`/products/${id}`, { method: 'DELETE' });
+  }
+
+  // Users
+  public async getUsers(options?: { signal?: AbortSignal }): Promise<any[]> {
+    return this.fetch<any[]>('/users', options);
+  }
+  public async createUsers(data: any): Promise<any> {
+    return this.fetch<any>('/users', { method: 'POST', body: JSON.stringify(data) });
+  }
+  public async updateUsers(id: string, data: any): Promise<any> {
+    return this.fetch<any>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+  public async deleteUsers(id: string, role: string, currentId: string): Promise<void> {
+    // Передаємо id в самому шляху, а роль — як query-параметр
+    return this.fetch<void>(`/users/${id}?role=${encodeURIComponent(role)}&&userId=${encodeURIComponent(currentId)}`, { 
+      method: 'DELETE' 
+    });
+  }
+}
+
+// КРИТИЧНЕ ВИПРАВЛЕННЯ: Додали /v1, щоб адреса збігалася з бекендом!
+export const apiClient = new ApiClient('http://localhost:3000/api/v1');

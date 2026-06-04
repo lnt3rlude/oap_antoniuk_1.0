@@ -17,7 +17,7 @@ router.get("/:id", productController.getProductOdsyById);
 
 router.post("/", productController.createProductOdsy);
 
-router.patch("/:id", productController.updateProductOdsy);
+router.put("/:id", productController.updateProductOdsy);
 
 router.delete("/:id", productController.deleteProductOdsy);
 

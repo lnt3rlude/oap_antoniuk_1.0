@@ -414,22 +414,28 @@ function initEventHandlers(): void {
       if (!id) return;
 
       // ВИДАЛЕННЯ
-      if (target.classList.contains("delete-btn")) {
-        if (confirm(`Видалити цей елемент з секції [${config.stateKey}]?`)) {
-          try {
-            const methodName = `delete${config.apiSuffix}`;
-            
-            if (typeof (apiClient as any)[methodName] !== "function") {
-              throw new Error(`Метод apiClient.${methodName} не знайдено!`);
-            }
-
-            await (apiClient as any)[methodName](id);
-            await loadData(pageId);
-          } catch (err: any) {
-            alert("Не вдалося видалити: " + (err.message || err));
-          }
+  if (target.classList.contains("delete-btn")) {
+    if (confirm(`Видалити цей елемент з секції [${config.stateKey}]?`)) {
+      try {
+        const methodName = `delete${config.apiSuffix}`;
+        
+        if (typeof (apiClient as any)[methodName] !== "function") {
+          throw new Error(`Метод apiClient.${methodName} не знайдено!`);
         }
+
+        // Дістаємо збережений JWT-токен із пам'яті браузера
+        const jwtToken = localStorage.getItem("jwt_token") || "";
+
+        // Передаємо ID та сам JWT-токен (в якому всередині вже зашита роль)
+        await (apiClient as any)[methodName](id, jwtToken);
+        
+        await loadData(pageId);
+      } catch (err: any) {
+        alert("Не вдалося видалити: " + (err.message || err));
       }
+    }
+  }
+
 
       // РЕДАГУВАННЯ
       if (target.classList.contains("edit-btn")) {
@@ -512,8 +518,97 @@ function showFormError(pageId: string, message: string) {
     config.form.insertBefore(errorEl, config.form.firstChild);
   }
   
-  errorEl.textContent = `❌ ${message}`;
+  errorEl.textContent = ` ${message}`;
   errorEl.classList.remove("hidden");
+}
+
+// =========================================================================
+// ЛОГІКА АВТЕНТИФІКАЦІЇ ТА РЕЄСТРАЦІЇ НА ФРОНТЕНДІ
+// =========================================================================
+
+const loginForm = document.getElementById("loginForm") as HTMLFormElement;
+const registerForm = document.getElementById("registerForm") as HTMLFormElement;
+
+const authStatusBlock = document.getElementById("authStatusBlock");
+const authStatusText = document.getElementById("authStatusText");
+
+const regStatusBlock = document.getElementById("regStatusBlock");
+const regStatusText = document.getElementById("regStatusText");
+
+// 1. ОБРОБКА ВХОДУ (ЛОГІН)
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!authStatusBlock || !authStatusText) return;
+
+    authStatusBlock.classList.remove("hidden");
+    authStatusText.style.color = "#0050b3";
+    authStatusText.innerText = "Вхід у систему...";
+
+    const formData = new FormData(loginForm);
+    const bodyData = Object.fromEntries(formData.entries());
+
+    try {
+      // Шлемо запит на твій бекенд логіну
+      const response = await apiClient.sendRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify(bodyData),
+      });
+
+      // Зберігаємо справжній отриманий токен
+      localStorage.setItem("jwt_token", response.token);
+
+      authStatusBlock.style.background = "#e6f7ff";
+      authStatusBlock.style.borderColor = "#91d5ff";
+      authStatusText.style.color = "#389e0d";
+      authStatusText.innerText = " Вхід успішний! Токен збережено в LocalStorage.";
+
+      // Перезавантажуємо сторінку через секунду, щоб підтягнулися токени для інших вкладок
+      setTimeout(() => location.reload(), 1200);
+
+    } catch (err: any) {
+      authStatusBlock.style.background = "#fff1f0";
+      authStatusBlock.style.borderColor = "#ffa39e";
+      authStatusText.style.color = "#cf1322";
+      authStatusText.innerText = ` Помилка: ${err.message || "Невірні дані або сервер спить"}`;
+    }
+  });
+}
+
+// 2. ОБРОБКА РЕЄСТРАЦІЇ (СТВОРЕННЯ АКАУНТУ)
+if (registerForm) {
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!regStatusBlock || !regStatusText) return;
+
+    regStatusBlock.classList.remove("hidden");
+    regStatusText.style.color = "#0050b3";
+    regStatusText.innerText = "Надсилання даних...";
+
+    const formData = new FormData(registerForm);
+    const bodyData = Object.fromEntries(formData.entries());
+
+    try {
+      // Шлемо запит на новий ендпоінт реєстрації
+      const response = await apiClient.sendRequest("/auth/register", {
+        method: "POST",
+        body: JSON.stringify(bodyData),
+      });
+
+      regStatusBlock.style.background = "#f6ffed";
+      regStatusBlock.style.borderColor = "#b7eb8f";
+      regStatusText.style.color = "#389e0d";
+      regStatusText.innerText = ` ${response.message || "Реєстрація успішна! Перейдіть на вкладку Входу."}`;
+      
+      registerForm.reset();
+
+    } catch (err: any) {
+      regStatusBlock.style.background = "#fff1f0";
+      regStatusBlock.style.borderColor = "#ffa39e";
+      regStatusText.style.color = "#cf1322";
+      regStatusText.innerText = ` Помилка: ${err.message || "Не вдалося зареєструватись"}`;
+    }
+  });
 }
 
 // ============================================================================

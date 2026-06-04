@@ -18,7 +18,7 @@ router.get("/", orderItemController.getAllOrderItemOdsy);
 
 router.get("/:id", orderItemController.getOrderItemOdsyById);
 
-router.patch("/:id", orderItemController.updateOrderItemOdsy);
+router.put("/:id", orderItemController.updateOrderItemOdsy);
 
 router.delete("/:id", orderItemController.deleteOrderItemOdsy);
 

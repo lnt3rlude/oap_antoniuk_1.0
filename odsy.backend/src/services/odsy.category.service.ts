@@ -4,23 +4,37 @@ import { CreateCategoryOdsyDto,
         } from "../dtos/odsy.category.dto";
 
 import { randomUUID } from "crypto";
-
 import { CategoryOdsyRepository } from "../repositories/category.odsy.repository";
-
 import { AppError } from "../errors/AppError";
 
 type Category = {
-        id: string; // Унікальний ідентифікатор сутності
-        name: string;
+    id: string; 
+    name: string;
+}
+// 🛡️ Оновлена функція: тепер вона залізобетонно перевіряє, чи передано саме РЯДОК
+const sanitizeXss = (text: any): string => {
+    if (!text || typeof text !== 'string') {
+        return String(text || ''); // Якщо це не рядок, просто перетворюємо на порожній рядок або текст безпечно
     }
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+};
 
 export class CategoryOdsyService {
     constructor(private repo: CategoryOdsyRepository) {}
 
     async createCategoryOdsy(dto: CreateCategoryOdsyDto): Promise<Category> {
+        // Перевіряємо, чи взагалі існує dto та поле name
+        const rawName = dto && dto.name ? dto.name : '';
+        const safeName = sanitizeXss(rawName);
+     
         const category: Category = {
             id: randomUUID(),
-            name: dto.name,
+            name: safeName, 
         };
      
         return await this.repo.create(category);
@@ -45,6 +59,11 @@ export class CategoryOdsyService {
     }
 
     async updateCategoryOdsy(id: string, dto: UpdateCategoryOdsyDto): Promise<Category> {
+        // 🛡️ ЕКРАНУЄМО НАЗВУ ПРИ ОНОВЛЕННІ (Якщо її передали)
+        if (dto && dto.name) {
+            dto.name = sanitizeXss(dto.name);
+        }
+
         const updated = await this.repo.update(id, dto);
     
         if (!updated) {

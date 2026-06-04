@@ -1,9 +1,10 @@
-export interface CreateUserOdsyDto { // Що вводить користувач
+export interface CreateUserOdsyDto { 
   userName: string;
   email: string;
+  password: string; 
 }
 
-export interface UserOdsyResponseDto { // Що сервер віддає клієнту у відповідь
+export interface UserOdsyResponseDto { 
   id: string;
   userName: string;
   email: string;
@@ -12,6 +13,11 @@ export interface UserOdsyResponseDto { // Що сервер віддає клі�
 export interface UpdateUserOdsyDto {
   userName?: string;
   email?: string;
+  password?: string; 
 }
 
-// "?" - Опціональні поля
+export interface LoginOdsyDto {
+  email: string;
+  password: string;
+}
+

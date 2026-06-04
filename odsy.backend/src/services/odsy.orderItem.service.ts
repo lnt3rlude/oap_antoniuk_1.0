@@ -26,19 +26,10 @@ export class OrderItemOdsyService {
 
     async createOrderItemOdsy(dto: CreateOrderItemOdsyDto): Promise<OrderItem> {
         // 1. Шукаємо продукт у потрібному репозиторії продуктів
-        const product = await this.productRepo.findById(dto.productId);
-
-        if (!product) {
-            throw new AppError("Product not found", 404, "PRODUCT_NOT_FOUND");
-        }
 
         // 2. Валідація залишків на складі
         if (dto.quantity <= 0) {
             throw new AppError("Quantity must be > 0", 400, "INVALID_QUANTITY");
-        }
-
-        if (product.stock < dto.quantity) {
-            throw new AppError("Not enough stock", 400, "NOT_ENOUGH_STOCK");
         }
 
         // 3. Збираємо повний об'єкт ТАК САМО, як у замовленнях (id користувач більше не пише!)

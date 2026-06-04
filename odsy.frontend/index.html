@@ -7,20 +7,87 @@
     <link rel="stylesheet" href="/src/styles.css" />
     <script src="/src/main.ts" type="module" defer></script>
   </head>
-  
+
   <body>
     <header>
       <h1>ODSYSODLOUT</h1>
       <nav class="tabs-nav">
+        <button data-target="auth-page" class="active">Вхід / Авторизація</button>
+        <button data-target="register-page">Реєстрація</button>
         <button data-target="categories-page">Категорії</button>
         <button data-target="orders-page">Замовлення</button>
-        <button data-target="items-page">Елементи замовлення</button>
+        <button data-target="order-items-page">Елементи замовлення</button>
         <button data-target="products-page">Оголошення</button>
         <button data-target="users-page">Користувачі</button>
       </nav>
     </header>
     
     <main>
+
+      <div id="auth-page" class="entity-page">
+        <section class="form-section" style="max-width: 400px; margin: 0 auto;">
+          <h2>Вхід у систему (Логін)</h2>
+          <form id="loginForm">
+            <div class="field">
+              <label for="loginEmail">Електронна пошта:</label>
+              <input id="loginEmail" type="email" name="email" required placeholder="example@mail.com" />
+            </div>
+            <div class="field">
+              <label for="loginPassword">Пароль:</label>
+              <input id="loginPassword" type="password" name="password" required placeholder="Введіть ваш пароль" />
+            </div>
+            <div class="buttons">
+              <button type="submit">Увійти</button>
+            </div>
+            
+            <div id="authStatusBlock" class="ui-state hidden" style="margin-top: 15px; padding: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25);">
+              <p id="authStatusText" style="color: #10b981; font-weight: bold; word-break: break-all;">
+                Статус: Очікування входу...
+              </p>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div id="register-page" class="entity-page">
+        <section class="form-section" style="max-width: 400px; margin: 0 auto;">
+          <h2>Створити новий акаунт</h2>
+          <form id="registerForm">
+            <div class="field">
+            <label>Ім'я користувача:</label>
+            <input type="text" name="userName" required placeholder="Мінімум 3 символи"/>
+          </div>
+
+          <div class="field">
+            <label>Електронна пошта:</label>
+            <input type="email" name="email" required placeholder="example@mail.com"/>
+          </div>
+
+          <div class="field">
+            <label>Роль користувача:</label>
+            <select name="role">
+              <option value="user">User (Звичайний)</option>
+              <option value="admin">Admin (Адміністратор)</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Пароль:</label>
+            <input type="password" name="password" required placeholder="Мінімум 6 символів"/>
+          </div>
+
+            <div class="buttons">
+              <button type="submit">Зареєструватися</button>
+            </div>
+
+            <div id="regStatusBlock" class="ui-state hidden" style="margin-top: 15px; padding: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25);">
+              <p id="regStatusText" style="color: #10b981; font-weight: bold;">
+                Успіх: Користувача створено! Можна логінитись.
+              </p>
+            </div>
+          </form>
+        </section>
+      </div>
 
       <div id="categories-page" class="entity-page">
         <section class="form-section">
@@ -125,7 +192,7 @@
         </section>
       </div>
 
-      <div id="items-page" class="entity-page">
+      <div id="order-items-page" class="entity-page">
         <section class="form-section">
           <h2>Додати елемент</h2>
           <form id="orderItemForm">
@@ -151,7 +218,7 @@
         <section class="list-section">
           <h2>Елементи замовлень</h2>
           <section class="search-filter">
-            <input type="text" id="itemSearchInput" placeholder="Пошук за ID замовлення або продукту..." />
+            <input type="text" id="itemSearchInput" placeholder="Пошук за ID замовлення..." />
             <button type="button" id="itemRefreshBtn">Оновити дані</button>
           </section>
           <table>
@@ -198,7 +265,7 @@
             </div>
 
             <div class="field">
-              <label for="prodCategoryIdInput">ID Категорії (Вставте UUID з таблиці категорій)</label> 
+              <label for="prodCategoryIdInput">ID Категорії (UUID з таблиці категорій)</label> 
               <input id="prodCategoryIdInput" name="categoryId" type="text" required /> 
               <p class="error-text" id="prodCategoryError"></p>
             </div>
@@ -244,6 +311,11 @@
             <div class="field">
               <label>Електронна пошта:</label>
               <input type="email" name="email" required placeholder="example@mail.com"/>
+            </div>
+
+            <div class="field">
+              <label>Пароль:</label>
+              <input type="password" name="password" required placeholder="Мінімум 6 символів"/>
             </div>
 
             <div class="buttons">

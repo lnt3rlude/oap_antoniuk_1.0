@@ -1,21 +1,22 @@
 import app from "./app";
-import { migrate } from "./db/migrate";
-import { all } from "./db/dbClient"; // Додаємо імпорт нашого dbClient
+import { initDb } from "./db/initDb"; 
+import { all } from "./db/dbClient"; 
 
 const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
-  await migrate();
+  // ЗАПУСКАЄМО ОНОВЛЕНУ БАЗУ З ПАРОЛЯМИ ТА РОЛЯМИ
+  await initDb(); 
 
   // === ТИМЧАСОВА ПЕРЕВІРКА СТОВПЦІВ ===
   try {
-    const columns = await all(`PRAGMA table_info(Orders);`);
+    const columns = await all(`PRAGMA table_info(Users);`); // Змінив на Users, щоб ти бачив свої колонки
     console.log("--------------------------------------------------");
-    console.log("РЕАЛЬНІ СЛОВПЦІ В ТАБЛИЦІ ORDERS З БАЗИ ДАНИХ:");
+    console.log("РЕАЛЬНІ СЛОВПЦІ В ТАБЛИЦІ USERS З БАЗИ ДАНИХ:");
     console.dir(columns);
     console.log("--------------------------------------------------");
   } catch (e) {
-    console.log("Не вдалося прочитати структуру таблиці Orders:", e);
+    console.log("Не вдалося прочитати структуру таблиці Users:", e);
   }
 
   app.listen(PORT, () => {

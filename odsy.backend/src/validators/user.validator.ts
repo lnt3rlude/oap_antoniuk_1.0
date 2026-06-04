@@ -4,7 +4,7 @@ function requireString(value: unknown, fieldName: string, minLen = 1) {
   if (typeof value !== "string" || value.trim().length < minLen) {
     return {
       field: fieldName,
-      message: `${fieldName} must be a non-empty string`
+      message: `${fieldName} must be a non-empty string and at least ${minLen} characters long`
     };
   }
   return null;
@@ -27,6 +27,10 @@ export function validateCreateUserDto(dto: CreateUserOdsyDto) {
     });
   }
 
+  // Обов'язкова валідація пароля при реєстрації (мінімум 6 символів)
+  const e3 = requireString(dto.password, "password", 6);
+  if (e3) errors.push(e3);
+
   return errors;
 }
 
@@ -48,6 +52,12 @@ export function validateUpdateUserDto(dto: UpdateUserOdsyDto) {
         message: "email must contain '@'"
       });
     }
+  }
+
+  // Опціональна валідація пароля при оновленні (якщо користувач вирішив його змінити)
+  if (dto.password !== undefined) {
+    const e = requireString(dto.password, "password", 6);
+    if (e) errors.push(e);
   }
 
   return errors;

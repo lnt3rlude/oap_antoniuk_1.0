@@ -15,7 +15,7 @@ router.get("/", categoryController.getAllCategoryOdsy);
 
 router.get("/:id", categoryController.getCategoryOdsyById);
 
-router.patch("/:id", categoryController.updateCategoryOdsy);
+router.put("/:id", categoryController.updateCategoryOdsy);
 
 router.delete("/:id", categoryController.deleteCategoryOdsy);
 

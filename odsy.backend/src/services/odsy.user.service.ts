@@ -4,32 +4,42 @@ import { CreateUserOdsyDto,
         } from "../dtos/odsy.user.dto";
 
 import { randomUUID } from "crypto";
-
 import { UserOdsyRepository } from "../repositories/user.odsy.repository";
-
 import { AppError } from "../errors/AppError";
-
-import { getTop5MVP } from "../3lab"
+import { getTop5MVP } from "../3lab";
+import { hashPassword } from "../utils/crypto.utils"; 
 
 type User = {
-        id: string;
-        userName: string
-        email: string;
-    }
+    id: string;
+    userName: string;
+    email: string;
+    password?: string;
+    role?: string;
+}
 
 export class UserOdsyService {
     constructor(
         private repo: UserOdsyRepository
     ) {}
 
-    async createUserOdsy(dto: CreateUserOdsyDto): Promise<User> {
+    async createUserOdsy(dto: CreateUserOdsyDto): Promise<UserOdsyResponseDto> {
+        const hashedPassword = hashPassword(dto.password);
+
         const user: User = {
             id: randomUUID(),
             userName: dto.userName,
             email: dto.email,
+            password: hashedPassword, // Передаємо хеш в об'єкт для бази
+            role: "user"               // Дефолтна роль для нових користувачів
         };
 
-        return await this.repo.create(user);
+        await this.repo.create(user);
+
+        return {
+            id: user.id,
+            userName: user.userName,
+            email: user.email
+        };
     }
 
     async getAllUsersOdsy(): Promise<User[]> {
@@ -51,7 +61,12 @@ export class UserOdsyService {
     }
 
     async updateUserOdsy(id: string, dto: UpdateUserOdsyDto): Promise<User> {
-        const updated = await this.repo.update(id, dto);
+        const updateData: Partial<User> = { ...dto };
+        if (dto.password) {
+            updateData.password = hashPassword(dto.password);
+        }
+
+        const updated = await this.repo.update(id, updateData);
     
         if (!updated) {
             throw new AppError (
@@ -75,11 +90,4 @@ export class UserOdsyService {
             );
         }
     }
-
-    async getTop5MVP() {
-        return getTop5MVP();
-  } 
 }
-
-// Функція (Що отримує): Що віддає {
-//  Змінна = Цей.Масив.Метод }

@@ -621,4 +621,57 @@ td button.delete-btn:hover,
   body {
     padding: 20px;
   }
+
+    /* ... твій старий код всередині медіа-запиту ... */
+  .actions-cell::before {
+    display: none !important;
+  }
+  
+  body {
+    padding: 20px;
+  }
+} /* 👈 ОЦЯ ДУЖКА ЗАКРИВАЄ МЕДІА-ЗАПИТ ДЛЯ МОБІЛОК */
+
+/* ============================================================================
+   10. СТИЛІ ДЛЯ СТОРІНКИ АВТОРИЗАЦІЇ ТА РЕЄСТРАЦІЇ (🔐 ДОДАТКОВО)
+   ============================================================================ */
+
+/* Центруємо форми по центру екрана на ПК та мобільних */
+#auth-page.entity-page.active,
+#register-page.entity-page.active {
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  width: 100%;
+}
+
+/* Інтегруємо плашки статусів у дизайн-систему */
+#authStatusBlock,
+#regStatusBlock {
+  margin-top: 20px;
+  padding: 14px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+#authStatusBlock p,
+#regStatusBlock p {
+  color: var(--color-success) !important;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Стиль для динамічних помилок */
+.form-error-message {
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-align: center;
 }
